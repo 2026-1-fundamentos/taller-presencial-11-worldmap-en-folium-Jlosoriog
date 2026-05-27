@@ -1,5 +1,3 @@
-# country_scientific_production.py
-
 import os
 
 import folium  # type: ignore
@@ -18,6 +16,7 @@ def load_affiliations():
         sep=",",
         index_col=None,
     )[["Affiliations"]]
+
     return dataframe
 
 
@@ -34,15 +33,20 @@ def add_countries_column(affiliations):
     """Transforma la columna 'Affiliations' a una lista de paises."""
 
     affiliations = affiliations.copy()
+
     affiliations["countries"] = affiliations["Affiliations"].copy()
     affiliations["countries"] = affiliations["countries"].str.split(";")
+
     affiliations["countries"] = affiliations["countries"].map(
         lambda x: [y.split(",") for y in x]
     )
+
     affiliations["countries"] = affiliations["countries"].map(
         lambda x: [y[-1].strip() for y in x]
     )
+
     affiliations["countries"] = affiliations["countries"].map(set)
+
     affiliations["countries"] = affiliations["countries"].str.join(", ")
 
     return affiliations
@@ -51,9 +55,12 @@ def add_countries_column(affiliations):
 def clean_countries(affiliations):
 
     affiliations = affiliations.copy()
+
     affiliations["countries"] = affiliations["countries"].str.replace(
-        "United States", "United States of America"
+        "United States",
+        "United States of America",
     )
+
     return affiliations
 
 
@@ -61,9 +68,11 @@ def count_country_frequency(affiliations):
     """Cuenta la frecuencia de cada país en la columna 'countries'"""
 
     countries = affiliations["countries"].copy()
+
     countries = countries.str.split(", ")
     countries = countries.explode()
     countries = countries.value_counts()
+
     return countries
 
 
@@ -100,11 +109,13 @@ def make_worldmap():
     affiliations = remove_na_rows(affiliations)
     affiliations = add_countries_column(affiliations)
     affiliations = clean_countries(affiliations)
+
     countries = count_country_frequency(affiliations)
+
     countries.to_csv("files/countries.csv")
+
     plot_world_map(countries)
 
 
 if __name__ == "__main__":
     make_worldmap()
-    
